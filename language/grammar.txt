@@ -1,0 +1,22 @@
+// every 12 hours
+// every 5 minutes from 10:00 to 14:00
+// every day 00:00
+// every monday 09:00
+// 2nd,third mon,wed,thu of march 17:00
+// 1st monday of sep,oct,nov 17:00
+// 1 of jan,april,july,oct 00:00
+
+// TimeUnit := SECONDS|MINUTES|HOURS|DAYS|MONTHS|YEARS
+
+// TimeOfDay := INTEGER(0 <= x <= 60) COLON INTEGER(0 <= x <= 60)
+// TimeRange := FROM TimeOfDay TO TimeOfDay
+
+// Day :=
+//	INTEGER(1 <= x <= 31) [st/rd/th]
+//	[SUNDAY|MONDAY|TUESDAY|WEDNESDAY|THURSDAY|FRIDAY|SATURDAY|DAY]?
+
+// IntervalsTiming :=
+//	EVERY NUMBER? TimeUnit [OF|ON MonthSpec]? [TimeOfDay|TimeRange]?
+
+// SpecificTiming :=
+//	[EVERY|ON]? Day [OF|ON MonthSpec]? TimeOfDay?

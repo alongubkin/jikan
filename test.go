@@ -6,12 +6,14 @@ import (
 	"log"
 	"os"
 	"strings"
+
+	"github.com/alongubkin/jikan/language"
 )
 
 func main() {
-	parser := NewParser(strings.NewReader("every 100 days"))
+	parser := language.NewParser(strings.NewReader("every 100 sec of month"))
 
-	every, err := parser.Parse()
+	every, err := parser.ParseIntervalsSchedule()
 	if err != nil {
 		log.Println(err)
 	}
