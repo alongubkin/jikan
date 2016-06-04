@@ -79,6 +79,12 @@ func (p *Parser) ParseIntervalsSchedule() (*IntervalsSchedule, error) {
 			if schedule.Months, err = p.parseMonthList(); err != nil {
 				return nil, err
 			}
+
+			// If the month list is a list of all months (e.g: "jan, feb, march, ..., dec"),
+			// then just turn it to nil, which is the same thing.
+			if isListOfAllMonths(schedule.Months) {
+				schedule.Months = nil
+			}
 		}
 	} else {
 		p.unscan()
@@ -199,4 +205,23 @@ func (p *Parser) scanIgnoreWhitespace() (token Token, position int, literal stri
 		token, position, literal = p.scan()
 	}
 	return
+}
+
+func isListOfAllMonths(months []time.Month) bool {
+	for month := time.January; month <= time.December; month++ {
+		found := false
+
+		for _, value := range months {
+			if month == value {
+				found = true
+				break
+			}
+		}
+
+		if !found {
+			return false
+		}
+	}
+
+	return true
 }

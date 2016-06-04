@@ -8,11 +8,32 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func TestInvalidPrefix(t *testing.T) {
+	_, err := parse("evry minute")
+	assert.Error(t, err)
+}
+
 func TestEveryMinute(t *testing.T) {
 	schedule, err := parse("every minute")
 	assert.NoError(t, err)
 	assert.Equal(t, 1, schedule.Interval)
 	assert.Equal(t, Minutes, schedule.TimeUnit)
+	assert.Nil(t, schedule.Months)
+}
+
+func TestEveryDay(t *testing.T) {
+	schedule, err := parse("every day")
+	assert.NoError(t, err)
+	assert.Equal(t, 1, schedule.Interval)
+	assert.Equal(t, Days, schedule.TimeUnit)
+	assert.Nil(t, schedule.Months)
+}
+
+func TestEverySecondStrange(t *testing.T) {
+	schedule, err := parse("    EveRy    SECond   ")
+	assert.NoError(t, err)
+	assert.Equal(t, 1, schedule.Interval)
+	assert.Equal(t, Seconds, schedule.TimeUnit)
 	assert.Nil(t, schedule.Months)
 }
 
@@ -48,12 +69,25 @@ func TestEvery30HoursOfFebAprilMay(t *testing.T) {
 	assert.EqualValues(t, []time.Month{2, 4, 5}, schedule.Months)
 }
 
+func TestEvery30SecondsOfAllMonths(t *testing.T) {
+	schedule, err := parse("every 30 seconds of march, aug, jan, apr, may, june, july, dec, feb, september, oct, nov")
+	assert.NoError(t, err)
+	assert.Equal(t, 30, schedule.Interval)
+	assert.Equal(t, Seconds, schedule.TimeUnit)
+	assert.Nil(t, schedule.Months)
+}
+
 func TestEvery5SecondsOfMonth(t *testing.T) {
 	schedule, err := parse("every 5 seconds of month")
 	assert.NoError(t, err)
 	assert.Equal(t, 5, schedule.Interval)
 	assert.Equal(t, Seconds, schedule.TimeUnit)
 	assert.Nil(t, schedule.Months)
+}
+
+func TestEveryDayOfInvalidMonth(t *testing.T) {
+	_, err := parse("every day of jly")
+	assert.Error(t, err)
 }
 
 func TestEveryMonthOfFebruary(t *testing.T) {
