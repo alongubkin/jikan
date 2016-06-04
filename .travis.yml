@@ -8,3 +8,4 @@ before_install:
   - chmod +x scripts/coverage.sh
 script:
   - ./scripts/coverage.sh
+  - $HOME/gopath/bin/goveralls -service=travis-ci -coverprofile=cover.out
