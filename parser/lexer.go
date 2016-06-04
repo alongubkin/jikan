@@ -119,7 +119,7 @@ func (s *Lexer) scanKeyword() (token Token, position int, literal string) {
 	return ILLEGAL, position, buf.String()
 }
 
-// scaInteger consumes the current digit and all contiguous digit runes.
+// scanInteger consumes the current digit and all contiguous digit runes.
 func (s *Lexer) scanInteger() (token Token, position int, literal string) {
 	// Create a buffer and read the current character into it.
 	var buf bytes.Buffer
