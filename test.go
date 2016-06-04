@@ -7,11 +7,11 @@ import (
 	"os"
 	"strings"
 
-	"github.com/alongubkin/jikan/language"
+	"github.com/alongubkin/jikan/parser"
 )
 
 func main() {
-	parser := language.NewParser(strings.NewReader("every 100 sec of month"))
+	parser := parser.NewParser(strings.NewReader("every minute"))
 
 	every, err := parser.ParseIntervalsSchedule()
 	if err != nil {

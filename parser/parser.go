@@ -1,4 +1,4 @@
-package language
+package parser
 
 import (
 	"fmt"
@@ -9,8 +9,8 @@ import (
 
 // Parser represents a parser.
 type Parser struct {
-	scanner *Scanner
-	buffer  struct {
+	lexer  *Lexer
+	buffer struct {
 		token    Token // last read token
 		position int
 		literal  string // last read literal
@@ -20,23 +20,29 @@ type Parser struct {
 
 // NewParser returns a new instance of Parser.
 func NewParser(r io.Reader) *Parser {
-	return &Parser{scanner: NewScanner(r)}
+	return &Parser{lexer: NewLexer(r)}
 }
 
-// ParseIntervalsSchedule is
+// ParseIntervalsSchedule parses the following syntaxes:
+//		every month
+//		every 5 minutes
+//		every 3 sec of jan
+// 		every 7 hours of jan, feb, april
+//		every 5 hours of month (identical to "every 5 hours")
 func (p *Parser) ParseIntervalsSchedule() (*IntervalsSchedule, error) {
-	// EVERY NUMBER? TimeUnit [OF|ON MonthSpec]? [TimeOfDay|TimeRange]?
-
 	schedule := &IntervalsSchedule{Interval: 1}
 	var err error
 
-	// Scan the EVERY token.
+	// An intervals schedule starts with an "every" token.
 	if token, position, literal := p.scanIgnoreWhitespace(); token != EVERY {
 		return nil, fmt.Errorf("%d: Found %q, expected \"every\"",
 			position, literal)
 	}
 
-	// Scan the optional time interval INTEGER token.
+	// Scan the optional time interval (the "5" in "every 5 minutes").
+	// It's optional because the following syntaxes are allowed:
+	// 		Every minute
+	//		Every 5 minutes
 	if token, position, literal := p.scanIgnoreWhitespace(); token == INTEGER {
 		if schedule.Interval, err = strconv.Atoi(literal); err != nil {
 			return nil, fmt.Errorf("%d: Cannot convert %q to integer",
@@ -46,27 +52,29 @@ func (p *Parser) ParseIntervalsSchedule() (*IntervalsSchedule, error) {
 		p.unscan()
 	}
 
-	// Scan time unit.
+	// Scan time unit (the "sec" in "every 5 sec").
 	if schedule.TimeUnit, err = p.parseTimeUnit(); err != nil {
 		return nil, err
 	}
 
-	// Try to scan optional month spec.
+	// Try to scan optional month spec (e.g: "every 5 hours of january")
 	if token, position, _ := p.scanIgnoreWhitespace(); token == OF || token == ON {
 		// Make sure that the current time unit is allowed for month specification
+		// (e.g: "every 5 years of jan, feb" is not allowed)
 		switch schedule.TimeUnit {
 		case Seconds, Minutes, Hours, Days:
 			break
 
 		default:
-			return nil, fmt.Errorf("%d: Cannot use \"of [month, ...]\" with this time unit.",
+			return nil, fmt.Errorf("%d: Cannot use \"of [month, ...]\" with this time unit",
 				position)
 		}
-		// Try to scan "month" keyword, which means all months.
-		if token, _, _ := p.scanIgnoreWhitespace(); token == MONTH {
-			schedule.Months = []time.Month{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12}
-		} else {
-			// The "month" keyword doesn't exist, so there should be a list of months.
+
+		// Check if the "month" keyword exists (e.g: "every 5 minutes of month").
+		// It means all months.
+		if token, _, _ := p.scanIgnoreWhitespace(); token != MONTH {
+			// The "month" keyword doesn't exist, so there should be a list of months
+			// (e.g: "every 5 minutes of jan, feb, march")
 			p.unscan()
 			if schedule.Months, err = p.parseMonthList(); err != nil {
 				return nil, err
@@ -161,7 +169,7 @@ func (p *Parser) parseMonth() (time.Month, error) {
 	}
 }
 
-// scan returns the next token from the underlying scanner.
+// scan returns the next token from the underlying lexer.
 // If a token has been unscanned then read that instead.
 func (p *Parser) scan() (token Token, position int, literal string) {
 	// If we have a token on the buffer, then return it.
@@ -170,8 +178,8 @@ func (p *Parser) scan() (token Token, position int, literal string) {
 		return p.buffer.token, p.buffer.position, p.buffer.literal
 	}
 
-	// Otherwise read the next token from the scanner
-	token, position, literal = p.scanner.Scan()
+	// Otherwise read the next token from the lexer
+	token, position, literal = p.lexer.Scan()
 
 	// Save it to the buffer in case we unscan later.
 	p.buffer.token, p.buffer.position, p.buffer.literal = token, position, literal

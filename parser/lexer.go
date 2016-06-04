@@ -1,4 +1,4 @@
-package language
+package parser
 
 import (
 	"bufio"
@@ -9,19 +9,19 @@ import (
 
 var eof = rune(0)
 
-// Scanner represents a lexical scanner.
-type Scanner struct {
+// Lexer represents a lexical scanner.
+type Lexer struct {
 	reader *bufio.Reader
 }
 
-// NewScanner returns a new instance of Scanner.
-func NewScanner(r io.Reader) *Scanner {
-	return &Scanner{reader: bufio.NewReader(r)}
+// NewLexer returns a new instance of Scanner.
+func NewLexer(r io.Reader) *Lexer {
+	return &Lexer{reader: bufio.NewReader(r)}
 }
 
 // read reads the next rune from the bufferred reader.
 // Returns the rune(0) if an error occurs (or io.EOF is returned).
-func (s *Scanner) read() (ch rune, position int) {
+func (s *Lexer) read() (ch rune, position int) {
 	ch, position, err := s.reader.ReadRune()
 	if err != nil {
 		return eof, position
@@ -30,14 +30,14 @@ func (s *Scanner) read() (ch rune, position int) {
 }
 
 // unread places the previously read rune back on the reader.
-func (s *Scanner) unread() {
+func (s *Lexer) unread() {
 	_ = s.reader.UnreadRune()
 }
 
 // Scan returns the next token and position from the underlying reader.
 // Also returns the literal text read for integers and suffixed integers tokens
 // since these token types can have different literal representations.
-func (s *Scanner) Scan() (token Token, position int, literal string) {
+func (s *Lexer) Scan() (token Token, position int, literal string) {
 	// Read next code point.
 	ch, position := s.read()
 
@@ -69,7 +69,7 @@ func (s *Scanner) Scan() (token Token, position int, literal string) {
 }
 
 // scanWhitespace consumes the current rune and all contiguous whitespace.
-func (s *Scanner) scanWhitespace() (token Token, position int, literal string) {
+func (s *Lexer) scanWhitespace() (token Token, position int, literal string) {
 	// Create a buffer and read the current character into it.
 	var buf bytes.Buffer
 	ch, pos := s.read()
@@ -92,7 +92,7 @@ func (s *Scanner) scanWhitespace() (token Token, position int, literal string) {
 }
 
 // scanKeyword consumes the current rune and all contiguous letter runes.
-func (s *Scanner) scanKeyword() (token Token, position int, literal string) {
+func (s *Lexer) scanKeyword() (token Token, position int, literal string) {
 	// Create a buffer and read the current character into it.
 	var buf bytes.Buffer
 	ch, position := s.read()
@@ -120,7 +120,7 @@ func (s *Scanner) scanKeyword() (token Token, position int, literal string) {
 }
 
 // scaInteger consumes the current digit and all contiguous digit runes.
-func (s *Scanner) scanInteger() (token Token, position int, literal string) {
+func (s *Lexer) scanInteger() (token Token, position int, literal string) {
 	// Create a buffer and read the current character into it.
 	var buf bytes.Buffer
 	ch, pos := s.read()
