@@ -4,8 +4,7 @@ go:
   - 1.6
 before_install:
   - go get github.com/mattn/goveralls
-  - go get golang.org/x/tools/cmd/cover
   - chmod +x scripts/coverage.sh
 script:
   - ./scripts/coverage.sh
-  - $HOME/gopath/bin/goveralls -service=travis-ci -coverprofile=cover.out
+  - $HOME/gopath/bin/goveralls -service=travis-ci -coverprofile="$workdir/cover.out"
