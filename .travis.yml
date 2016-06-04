@@ -5,5 +5,6 @@ go:
 before_install:
   - go get github.com/mattn/goveralls
   - go get golang.org/x/tools/cmd/cover
+  - chmod +x coverage.sh
 script:
   - ./scripts/coverage.sh
