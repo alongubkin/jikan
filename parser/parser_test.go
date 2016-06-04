@@ -21,6 +21,11 @@ func TestEveryMinute(t *testing.T) {
 	assert.Nil(t, schedule.Months)
 }
 
+func TestUnrecognizedCharacter(t *testing.T) {
+	_, err := parse("every @ minutes")
+	assert.Error(t, err)
+}
+
 func TestEveryDay(t *testing.T) {
 	schedule, err := parse("every day")
 	assert.NoError(t, err)
