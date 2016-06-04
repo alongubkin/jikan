@@ -24,11 +24,11 @@ func NewParser(r io.Reader) *Parser {
 }
 
 // ParseIntervalsSchedule parses the following syntaxes:
-//		every month
-//		every 5 minutes
-//		every 3 sec of jan
-// 		every 7 hours of jan, feb, april
-//		every 5 hours of month (identical to "every 5 hours")
+//   every month
+//   every 5 minutes
+//   every 3 sec of jan
+//   every 7 hours of jan, feb, april
+//   every 5 hours of month (identical to "every 5 hours")
 func (p *Parser) ParseIntervalsSchedule() (*IntervalsSchedule, error) {
 	schedule := &IntervalsSchedule{Interval: 1}
 	var err error
